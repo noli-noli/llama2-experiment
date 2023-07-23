@@ -1,5 +1,6 @@
 import argparse
-import bitsandbytes as bnb
+import bitsan
+bytes as bnb
 from functools import partial
 import os
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training, AutoPeftModelForCausalLM
@@ -164,9 +165,23 @@ def train(model, tokenizer, dataset, output_dir):
     del model
     del trainer
     torch.cuda.empty_cache()
-    
-# 事前トレーニング済みのモデルの名前指定
+
+
+///////////////////////////////////////////////////////////////   
+
+
 model_name = "meta-llama/Llama-2-7b-hf" 
+file_name = "../raw_data/test_data.json"
+
+
+with open(file_name, "r") as file:
+    data_list = json.load(file)
+
+# リストをpandas.DataFrame形式に変換
+df = pd.DataFrame(data_list)
+
+# pandas.DataFrameをdatasets.arrow_dataset.Dataset形式に変換
+dataset = Dataset.from_pandas(df)
 
 # BitsAndBytesの設定をインポート    
 bnb_config = create_bnb_config()
@@ -175,7 +190,7 @@ bnb_config = create_bnb_config()
 # ここではユーザーのトークンとbitsandbytesの設定を使用　　--??
 model, tokenizer = load_model(model_name, bnb_config)
 
-# ----------データセットの前処理を行う----------
+# ----------データセットの前処理----------
 
 # モデルが受け入れることのできる最大のトークン数
 max_length = get_max_length(model)

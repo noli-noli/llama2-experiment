@@ -24,7 +24,7 @@ def create_prompt_formats(sample):
     blurb = f"{INTRO_BLURB}"
     instruction = f"{INSTRUCTION_KEY}\n{sample['instruction']}"
     input_context = f"{INPUT_KEY}\n{sample['context']}" if sample["context"] else None
-    response = f"{RESPONSE_KEY}\n{sample['response']}"
+    response = f"{RESPONSE_KEY}\n{sample["answer"]}"
     end = f"{END_KEY}"
     
     parts = [part for part in [blurb, instruction, input_context, response, end] if part]

@@ -8,6 +8,9 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, set_seed, Trainer,
     DataCollatorForLanguageModeling, Trainer, TrainingArguments
 from datasets import load_dataset
 
+
+from prepro import  create_prompt_formats,get_max_length,preprocess_batch,preprocess_dataset
+
 def load_model(model_name, bnb_config):
     n_gpus = torch.cuda.device_count()
     max_memory = f'{40960}MB'
@@ -38,7 +41,7 @@ def create_bnb_config():
 
 def create_peft_config(modules):
     """
-    あなたのモデルに対してParameter-Efficient Fine-Tuningの設定を作成します
+    あなたのモデルに対してParameter-Efficient Fine-Tuningの設定を作成
     :param modules: Loraを適用するモジュールの名前
     """
     # LoRAの設定を作成
@@ -80,3 +83,105 @@ def find_all_linear_names(model):
 
     # 線形モジュールの名前のリスト
     return list(lora_module_names)
+
+def train(model, tokenizer, dataset, output_dir):
+    """
+    モデルをトレーニングし、結果を保存する
+    :param model: トレーニングするモデル
+    :param tokenizer: テキストをトークン化するためのトークナイザ
+    :param dataset: トレーニングデータセット
+    :param output_dir: モデルの保存先ディレクトリ
+    """
+    
+    # ファインチューニング中のメモリ使用量を減らすために、勾配チェックポイントを有効
+    model.gradient_checkpointing_enable()
+
+    # PEFTのメソッドを用いてモデルをkbitトレーニング
+    model = prepare_model_for_kbit_training(model)
+
+    # LoRAを適用するモジュールの名前
+    modules = find_all_linear_names(model)
+
+    # モジュールに対してPEFT設定を作成し、モデルをPEFTにラップ
+    peft_config = create_peft_config(modules)
+    model = get_peft_model(model, peft_config)
+    
+    # トレーニング可能なパラメータの割合に関する情報を出力
+    print_trainable_parameters(model)
+    
+    # トレーニングパラメータの設定
+    trainer = Trainer(
+        model=model,
+        train_dataset=dataset,
+        args=TrainingArguments(
+            per_device_train_batch_size=1,
+            gradient_accumulation_steps=4,
+            warmup_steps=2,
+            max_steps=20,
+            learning_rate=2e-4,
+            fp16=True,
+            logging_steps=1,
+            output_dir="outputs",
+            optim="paged_adamw_8bit",
+        ),
+        data_collator=DataCollatorForLanguageModeling(tokenizer, mlm=False)
+    )
+    
+    # 推論を高速化するために、キャッシュの使用を再度有効化
+    model.config.use_cache = False 
+    
+    # トレーニング前にデータタイプの確認
+    dtypes = {}
+    for _, p in model.named_parameters():
+        dtype = p.dtype
+        if dtype not in dtypes: dtypes[dtype] = 0
+        dtypes[dtype] += p.numel()
+    total = 0
+    for k, v in dtypes.items(): total+= v
+    for k, v in dtypes.items():
+        print(k, v, v/total)
+     
+
+    do_train = True
+    
+  
+    print("Training...")
+    
+    if do_train:
+        train_result = trainer.train()
+        metrics = train_result.metrics
+        trainer.log_metrics("train", metrics)
+        trainer.save_metrics("train", metrics)
+        trainer.save_state()
+        print(metrics)    
+    
+    # モデルを保存
+    print("Saving last checkpoint of the model...")
+    os.makedirs(output_dir, exist_ok=True)
+    trainer.model.save_pretrained(output_dir)
+    
+    # 重みのマージのためのメモリを解放
+    del model
+    del trainer
+    torch.cuda.empty_cache()
+    
+# 事前トレーニング済みのモデルの名前指定
+model_name = "meta-llama/Llama-2-7b-hf" 
+
+# BitsAndBytesの設定をインポート    
+bnb_config = create_bnb_config()
+
+# Hugging Faceからモデルとトークナイザをロード
+# ここではユーザーのトークンとbitsandbytesの設定を使用　　--??
+model, tokenizer = load_model(model_name, bnb_config)
+
+# ----------データセットの前処理を行う----------
+
+# モデルが受け入れることのできる最大のトークン数
+max_length = get_max_length(model)
+
+# データセットを前処理します。引数がトークナイザ、最大トークン数、乱数のシード、データセット
+dataset = preprocess_dataset(tokenizer, max_length, seed, dataset)
+
+output_dir = "../results/Llama-2-7b-hf/final_checkpoint"
+train(model, tokenizer, dataset, output_dir)

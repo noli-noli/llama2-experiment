@@ -1,0 +1,32 @@
+
+version: '3.8'
+services:
+  transformer:
+    build:
+      context: .
+      dockerfile: dockerfile
+      args:
+        - HTTP_PROXY=${HTTP_PROXY}
+        - HTTPS_PROXY=${HTTPS_PROXY}
+    container_name: LLAMA2
+    environment:
+      - http_proxy=$HTTP_PROXY
+      - https_proxy=$HTTPS_PROXY
+      - TZ=Asia/Tokyo
+    env_file:
+      - .env
+    volumes:
+      - .:/root/src
+    working_dir: /root/src
+    runtime: nvidia
+    tty: true
+    restart: "no"
+    deploy:
+      resources:
+        limits:
+          memory: 30g
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

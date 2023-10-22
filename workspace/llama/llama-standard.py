@@ -13,8 +13,8 @@ import readline
 
 
 
-models_json = "../models/models.json"
-models_path = "../models/"
+models_json = "/workspace/models/models.json"
+models_path = "/workspace/models/"
 
 
 
@@ -92,7 +92,7 @@ def run_model(models_path,model):
             top_p=0.95
         )
 
-        print(sequences[0]["generated_text"])
+        print((sequences[0]["generated_text"]).split("\n")[2])
 
     print("\n#####################\n### Task finished ###\n#####################\n")
     select_model(models_json)

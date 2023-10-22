@@ -35,6 +35,10 @@ services:
     #キーボード割込みによるコンテナの停止時、コンテナ内のプロセスに正常終了を通知する。
     stop_signal: SIGINT
 
+    #Portの設定
+    ports:
+      - "8888:8888"
+
     #GPUを使用するための設定
     deploy:
       resources:

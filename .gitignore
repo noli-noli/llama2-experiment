@@ -1,3 +1,1 @@
-.env
-llama-2-7b-chat-hf/
-raw_data/
+workspace/models/*

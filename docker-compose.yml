@@ -1,32 +1,49 @@
-
-version: '3.8'
+version: "3"
 services:
-  transformer:
+  gp20a051:
+    #コンテナの名前を指定
+    container_name: llama2-experiment
+
+    #ビルド
     build:
       context: .
+      #ビルドする際に使用するdockerfileを指定
       dockerfile: dockerfile
+
+      #dockerfileで使用する変数を渡す。
       args:
-        - HTTP_PROXY=${HTTP_PROXY}
-        - HTTPS_PROXY=${HTTPS_PROXY}
-    container_name: LLAMA2
-    environment:
-      - http_proxy=$HTTP_PROXY
-      - https_proxy=$HTTPS_PROXY
-      - TZ=Asia/Tokyo
-    env_file:
-      - .env
+        - http_tmp=$http_proxy
+        - https_tmp=$https_proxy
+
+    #ワーキングディレクトリを/workspaceに設定
     volumes:
-      - .:/root/src
-    working_dir: /root/src
-    runtime: nvidia
+      - ./workspace:/workspace
+
+    #ワーキングディレクトリを/workspaceに設定
+    working_dir: /workspace
+
+    #コンテナ起動時に実行するプログラムを記述
+    command: /bin/bash
+
+    #学内用proxyを使用するための環境変数が書かれたファイルを指定
+    env_file:
+      - proxy.env
+
+    #ttyを有効化
     tty: true
-    restart: "no"
+
+    #キーボード割込みによるコンテナの停止時、コンテナ内のプロセスに正常終了を通知する。
+    stop_signal: SIGINT
+
+    #GPUを使用するための設定
     deploy:
       resources:
-        limits:
-          memory: 30g
+        #コンテナが使用するRAMの上限を設定する際は以下2行をコメントアウト
+        #limits:
+        #  memory: 24G
         reservations:
           devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
+            - capabilities: [gpu]
+
+    #core dumpを防ぐ為の設定
+    shm_size: 12GB

@@ -91,7 +91,7 @@ def run_model(models_path,model):
             #temperature=0.4,
             top_p=0.95
         )
-
+        
         print((sequences[0]["generated_text"]).split("\n")[2])
 
     print("\n#####################\n### Task finished ###\n#####################\n")

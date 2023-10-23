@@ -5,7 +5,7 @@ const chatSend = document.querySelector('#chat-send');
 const messageContainer = document.querySelector('.messages');
 const sendImg = document.querySelector('#send-img');
 const loader = document.querySelector('.loader');
-const server = 'http://172.17.100.20:8888/items/?text=';
+const server = 'http://172.17.100.20:49152/items/?text=';
 const messages = []; // store previous messages to remember whole conversation
 
 // Function to add a chat message to the container

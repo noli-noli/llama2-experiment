@@ -45,24 +45,25 @@ generation_pipe = pipeline(
 
 @app.get("/items/")
 def run_model(text: str):
-    print(text)
+    #prompt = "<s>[INST] <<SYS>>あなたは有能なアシスタントです。 日本語で回答してください。<</SYS>>" + text + "<</INST>>"
+    prompt = text 
+    print(prompt)
     sequences = generation_pipe(
-        text,
-        max_length=256,    #
-        pad_token_id=tokenizer.pad_token_id,
+        prompt,
+        max_length=128,    #生成する最大トークン数
+        #pad_token_id=tokenizer.pad_token_id,
         eos_token_id=tokenizer.eos_token_id,
-        #do_sample=True,
-        top_k=10,
-        #temperature=0.4,
-        top_p=0.95  #単語のランダム性を指定
+        top_k=40,
+        top_p=0.6  #単語のランダム性を指定
     )
 
     custom_headers = {
         "Access-Control-Allow-Origin": "*",
     }
+
     tmp = (sequences[0]["generated_text"])
     tmp = tmp.replace("\n", "")
-    #tmp = tmp.replace(f"{text}","")
+    tmp = tmp.replace("\"", "")
 
     #return JSONResponse(content=(sequences[0]["generated_text"]).split("\n")[2], headers=custom_headers)
     return JSONResponse(content=tmp, headers=custom_headers)

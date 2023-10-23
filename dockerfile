@@ -13,6 +13,10 @@ ENV TZ=Asia/Tokyo
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 #apt関連の設定
-RUN apt-get -y update && apt-get -y upgrade
-RUN apt-get install -y python3 python3-pip tmux
+RUN apt update -y && apt upgrade -y
+RUN apt install -y nano screen tmux systemd init nginx python3 python3-pip sed
 
+#nginxの設定
+RUN sed -i "s/listen 80 default_server/listen 8080 default_server/g" /etc/nginx/sites-enabled/default 
+RUN sed -i "s/listen \[\:\:\]\:80 default_server/listen \[\:\:\]\:8080 default_server/g" /etc/nginx/sites-enabled/default 
+RUN sed -i "s/root \/var\/www\/html/root \/workspace\/front/g" /etc/nginx/sites-enabled/default

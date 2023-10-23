@@ -23,13 +23,14 @@ services:
     working_dir: /workspace
 
     #コンテナ起動時に実行するプログラムを記述
-    command: /bin/bash
+    command: /sbin/init
 
     #学内用proxyを使用するための環境変数が書かれたファイルを指定
     env_file:
       - proxy.env
 
-    #ttyを有効化
+    #ttyとprivilegedを有効化
+    privileged: true
     tty: true
 
     #キーボード割込みによるコンテナの停止時、コンテナ内のプロセスに正常終了を通知する。
@@ -37,7 +38,8 @@ services:
 
     #Portの設定
     ports:
-      - "8888:8888"
+      - "8080:8080" #フロントエンド
+      - "49152:49152" #バックエンド
 
     #GPUを使用するための設定
     deploy:

@@ -12,6 +12,7 @@ llm = Llama(model_path="../models/Llama-2-70B-chat-GGUF/llama-2-70b-chat.Q5_K_M.
 @app.get("/items/")
 def run_model(text: str):
     prompt = text
+    print("prompt: ", prompt)
 
     # 推論の実行
     output = llm(
@@ -25,6 +26,6 @@ def run_model(text: str):
     custom_headers = {
         "Access-Control-Allow-Origin": "*",
     }
-
+    print("output: ", (output["choices"][0]["text"]).replace("\n", ""))
     #return JSONResponse(content=(sequences[0]["generated_text"]).split("\n")[2], headers=custom_headers)
     return JSONResponse(content=(output["choices"][0]["text"]).replace("\n", ""), headers=custom_headers)

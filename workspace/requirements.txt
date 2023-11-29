@@ -1,5 +1,0 @@
-transformers
-torch
-scipy
-accelerate
-bitsandbytes==0.40.2

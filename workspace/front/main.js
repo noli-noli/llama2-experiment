@@ -36,8 +36,9 @@ function handleUserInput(event) {
         // レスポンスが返ってきたら実行する処理
         .then(data => {
             hideLoader();
-            addMessage(data, false);
-            console.log('success:', data);
+            let tmp = data.split("\"").join("");
+            addMessage(tmp, false);
+            console.log('success:', tmp);
         })
         .catch(error => {
             // エラーが発生した場合の処理

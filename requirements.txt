@@ -1,0 +1,7 @@
+transformers
+scipy
+accelerate
+fastapi
+uvicorn
+bitsandbytes==0.40.2
+llama-cpp-python

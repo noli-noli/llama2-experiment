@@ -13,11 +13,11 @@ import readline
 
 
 
-models_json = "/workspace/models/models.json"
-models_path = "/workspace/models/"
+#model_json = "/workspace/models/models.json"
+model_path = "/workspace/models/"
+model_name = "Llama-2-13b-chat-hf"
 
-
-
+"""
 def select_model(models_json):
     json_open = open(models_json, 'r')
     json_load = json.load(json_open)
@@ -36,12 +36,12 @@ def select_model(models_json):
             return 0
         else:
             print("=== Number does not exist ===")
-    
+"""
 
 
-def run_model(models_path,model):
-    print(f"\n>>> {model} <<<\n")
-    model = models_path + model
+def run_model(model_path,model_name):
+    #print(f"\n>>> {model} <<<\n")
+    model = model_path + model_name
 
     tokenizer = AutoTokenizer.from_pretrained(model) #modelで指定したディレクトリ内のトークナイザーを読込む
     tokenizer.pad_token_id = tokenizer.eos_token_id
@@ -83,7 +83,7 @@ def run_model(models_path,model):
 
         sequences = generation_pipe(
             text,
-            max_length=128,    #
+            max_length=128,    #出力トークンサイズの最大値
             pad_token_id=tokenizer.pad_token_id,
             eos_token_id=tokenizer.eos_token_id,
             #do_sample=True,
@@ -95,10 +95,9 @@ def run_model(models_path,model):
         print((sequences[0]["generated_text"]).split("\n")[2])
 
     print("\n#####################\n### Task finished ###\n#####################\n")
-    select_model(models_json)
 
 
 
 
 if __name__ == "__main__":
-    select_model(models_json)
+    run_model(model_path,model_name)

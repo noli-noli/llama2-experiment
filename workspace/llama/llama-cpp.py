@@ -18,8 +18,8 @@ while True:
         prompt,
         max_tokens=256,
         echo=False,
-        top_p=0.85,
-        top_k=10, 
+        #top_p=0.85,
+        #top_k=10, 
     )
 
     print(output["choices"][0]["text"])

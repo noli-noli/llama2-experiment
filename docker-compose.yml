@@ -1,8 +1,9 @@
 version: "3"
 services:
+#イメージ名を指定
   gp2xaxxx:
     #コンテナの名前を指定
-    container_name: llama2-experiment
+    container_name: llama2-gp2xaxxx
 
     #ビルド
     build:
